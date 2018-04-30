@@ -1,0 +1,3 @@
+flex -l file.l
+bison -vd file.y
+gcc -o result.exe lex.yy.c file.tab.c -lm

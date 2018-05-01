@@ -39,8 +39,8 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     SWAG = 258,
-     TYPE = 259,
+     TT_INT = 258,
+     TT_STR = 259,
      T_CEQ = 260,
      T_CNE = 261,
      T_CLT = 262,
@@ -73,7 +73,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 24 "swag.y"
+#line 18 "swag.y"
 
 	int ival;
 	char *sval;

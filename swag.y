@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <iostream>
+#include <vector>
 using namespace std;
 
-// stuff from flex that bison needs to know about:
 extern "C" int yylex();
 extern "C" int yyparse();
 extern "C" FILE *yyin;
@@ -16,25 +16,27 @@ void updateSymbolVal(char symbol, int val);
 void yyerror(const char *s);
 %}
 
-// Bison fundamentally works by asking flex to get the next token, which it
-// returns as an object of type "yystype".  But tokens could be of any
-// arbitrary data type!  So we deal with that in Bison by defining a C union
-// holding each of the types of tokens that Flex could return, and have Bison
-// use that union instead of "int" for the definition of "yystype":
 %union {
 	int ival;
 	char *sval;
     char id;
 }
-%token SWAG TYPE
+
+//Variable types
+%token TT_INT TT_STR
+
 //Compares
 %token T_CEQ T_CNE T_CLT T_CLE T_CGT T_CGE
-//Utils
+
+//Control
 %token T_LPAREN T_RPAREN T_LBRACE T_RBRACE
+
 //Math and assing
 %left T_PLUS T_MINUS T_MUL T_DIV T_ASSIGN
+
 //Termination
 %token T_END T_ENDL
+
 //Methods
 %token T_PRINT
 
@@ -64,7 +66,7 @@ plain_statement :   assignment T_ENDL {;}
                     | T_PRINT exp T_ENDL			{cout << $2 <<endl;}
                     ;
 
-assignment : T_ID T_ASSIGN exp  { updateSymbolVal($1,$3); }
+assignment : type T_ID T_ASSIGN exp  { updateSymbolVal($2,$4); }
 
 exp    	: term                  {$$ = $1;}
        	| exp T_PLUS term          {$$ = $1 + $3;}
@@ -75,7 +77,9 @@ term   	: T_INT                {$$ = $1;}
 		| T_ID			{$$ = symbolVal($1);} 
         ;        
         
-
+type    :   TT_INT
+        |   TT_STR
+        ;
 %%
 
 int main(int, char**) {

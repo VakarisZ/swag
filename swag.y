@@ -61,14 +61,14 @@ block_statement : statement | T_END;
 statement : plain_statement;
 
 plain_statement :   assignment T_ENDL {;}
-                    | T_PRINT exp T_ENDL			{printf("Printing %d\n", $2);}
+                    | T_PRINT exp T_ENDL			{cout << $2 <<endl;}
                     ;
 
-assignment : T_ID T_ASSIGN exp  { updateSymbolVal($1,$3); } T_ENDL
+assignment : T_ID T_ASSIGN exp  { updateSymbolVal($1,$3); }
 
 exp    	: term                  {$$ = $1;}
-       	| exp '+' term          {$$ = $1 + $3;}
-       	| exp '-' term          {$$ = $1 - $3;}
+       	| exp T_PLUS term          {$$ = $1 + $3;}
+       	| exp T_MINUS term          {$$ = $1 - $3;}
        	;
 
 term   	: T_INT                {$$ = $1;}

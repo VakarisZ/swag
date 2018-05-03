@@ -2,20 +2,19 @@
 using namespace std;
 class Variable {
     public:
-    string name,type;
-    string strVal;
+    char* name;
+	char* type;
+    char* strVal;
     int intVal;
-    Variable(string name1, string value){
+    Variable(char* name1, char* value){
         name = name1;
         type = "string";
         strVal = value;
-        intVal = 0;
     }
-    Variable(string name1, int value){
+    Variable(char* name1, int value){
         name = name1;
         type = "int";
         intVal = value;
-        strVal = "";
     }
     Variable(){
         name = "";

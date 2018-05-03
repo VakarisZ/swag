@@ -85,11 +85,11 @@ extern "C" int yyparse();
 extern "C" FILE *yyin;
 extern int line_num; 
 int symbols[52];
-map<string, Variable> varMap;
+std::map<char*, Variable> varMap;
 int symbolVal(char symbol);
 void updateSymbolVal(char symbol, int val);
 void yyerror(const char *s);
-void addVariable(string name, int val);
+void addVariable(char* name, int val);
 
 
 /* Line 189 of yacc.c  */
@@ -464,8 +464,8 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    62,    62,    64,    64,    66,    66,    68,    70,    71,
-      74,    76,    77,    78,    81,    82,    85,    86
+       0,    62,    62,    64,    64,    66,    67,    70,    72,    73,
+      76,    78,    79,    80,    83,    84,    87,    88
 };
 #endif
 
@@ -1374,66 +1374,73 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-        case 8:
+        case 6:
 
 /* Line 1455 of yacc.c  */
-#line 70 "swag.y"
+#line 67 "swag.y"
+    {cout << "bye." <<endl;;}
+    break;
+
+  case 8:
+
+/* Line 1455 of yacc.c  */
+#line 72 "swag.y"
     {;;}
     break;
 
   case 9:
 
 /* Line 1455 of yacc.c  */
-#line 71 "swag.y"
+#line 73 "swag.y"
     {cout << (yyvsp[(2) - (3)].ival) <<endl;;}
     break;
 
   case 10:
 
 /* Line 1455 of yacc.c  */
-#line 74 "swag.y"
+#line 76 "swag.y"
     { addVariable((yyvsp[(2) - (4)].sval),(yyvsp[(4) - (4)].ival)); ;}
     break;
 
   case 11:
 
 /* Line 1455 of yacc.c  */
-#line 76 "swag.y"
+#line 78 "swag.y"
     {(yyval.ival) = (yyvsp[(1) - (1)].ival);;}
     break;
 
   case 12:
 
 /* Line 1455 of yacc.c  */
-#line 77 "swag.y"
+#line 79 "swag.y"
     {(yyval.ival) = (yyvsp[(1) - (3)].ival) + (yyvsp[(3) - (3)].ival);;}
     break;
 
   case 13:
 
 /* Line 1455 of yacc.c  */
-#line 78 "swag.y"
+#line 80 "swag.y"
     {(yyval.ival) = (yyvsp[(1) - (3)].ival) - (yyvsp[(3) - (3)].ival);;}
     break;
 
   case 14:
 
 /* Line 1455 of yacc.c  */
-#line 81 "swag.y"
+#line 83 "swag.y"
     {(yyval.ival) = (yyvsp[(1) - (1)].ival);;}
     break;
 
   case 15:
 
 /* Line 1455 of yacc.c  */
-#line 82 "swag.y"
+#line 84 "swag.y"
     { (yyval.ival) = varMap[(yyvsp[(1) - (1)].sval)].intVal; ;}
     break;
 
 
 
 /* Line 1455 of yacc.c  */
-#line 1437 "swag.tab.c"
+#line 1444 "swag.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -1645,7 +1652,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 88 "swag.y"
+#line 90 "swag.y"
 
 
 int main(int, char**) {
@@ -1699,11 +1706,11 @@ void yyerror(const char *s) {
 
 /* Code written by Vakaris */
 
+//weeeeeeeeeeeeeeeeed
 
-void addVariable(string name, int val){
+void addVariable(char* name, int val){
     Variable var(name, val);
-    cout << name << " " << val << endl;
-    varMap.insert(pair<string, Variable>(name, var));
+    varMap.insert(pair<char*, Variable>(name, var));
 }
 
 

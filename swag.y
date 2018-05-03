@@ -14,11 +14,11 @@ extern "C" int yyparse();
 extern "C" FILE *yyin;
 extern int line_num; 
 int symbols[52];
-map<string, Variable> varMap;
+std::map<char*, Variable> varMap;
 int symbolVal(char symbol);
 void updateSymbolVal(char symbol, int val);
 void yyerror(const char *s);
-void addVariable(string name, int val);
+void addVariable(char* name, int val);
 %}
 
 %union {
@@ -63,7 +63,9 @@ program: block_statements ;
 
 block_statements : block_statement | block_statements block_statement;
 
-block_statement : statement | T_END;
+block_statement : 	statement 
+					| T_END {cout << "bye." <<endl;}
+					;
 
 statement : plain_statement;
 
@@ -138,9 +140,10 @@ void yyerror(const char *s) {
 
 /* Code written by Vakaris */
 
+//weeeeeeeeeeeeeeeeed
 
-void addVariable(string name, int val){
+void addVariable(char* name, int val){
     Variable var(name, val);
-    varMap.insert(pair<string, Variable>(name, var));
+    varMap.insert(pair<char*, Variable>(name, var));
 }
 

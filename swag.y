@@ -19,6 +19,7 @@ int symbolVal(char symbol);
 void updateSymbolVal(char symbol, int val);
 void yyerror(const char *s);
 void addVariable(char* name, int val);
+void addStringVariable(char* name, char* val);
 %}
 
 %union {
@@ -52,7 +53,7 @@ void addVariable(char* name, int val);
 
 // define the "terminal symbol" token types I'm going to use (in CAPS
 // by convention), and associate each with a field of the union:
-%token sval T_STRING
+%token <sval> T_STRING
 
 %start program
 
@@ -71,9 +72,12 @@ statement : plain_statement;
 
 plain_statement :   assignment T_ENDL {;}
                     | T_PRINT exp T_ENDL			{cout << $2 <<endl;}
+                    | TT_STR T_PRINT T_ID T_ENDL      {cout << varMap[$3].strVal <<endl;}
                     ;
 
-assignment : type T_ID T_ASSIGN exp  { addVariable($2,$4); }
+assignment : TT_INT T_ID T_ASSIGN exp  { addVariable($2,$4); }
+            | TT_STR T_ID T_ASSIGN T_STRING  { addStringVariable($2,$4); }
+            ;
 
 exp    	: term                  {$$ = $1;}
        	| exp T_PLUS term          {$$ = $1 + $3;}
@@ -143,6 +147,11 @@ void yyerror(const char *s) {
 //weeeeeeeeeeeeeeeeed
 
 void addVariable(char* name, int val){
+    Variable var(name, val);
+    varMap.insert(pair<char*, Variable>(name, var));
+}
+
+void addStringVariable(char* name, char* val){
     Variable var(name, val);
     varMap.insert(pair<char*, Variable>(name, var));
 }

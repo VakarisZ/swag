@@ -61,8 +61,7 @@
      T_PRINT = 277,
      T_INT = 278,
      T_ID = 279,
-     sval = 280,
-     T_STRING = 281
+     T_STRING = 280
    };
 #endif
 
@@ -73,7 +72,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 24 "swag.y"
+#line 25 "swag.y"
 
 	int ival;
 	char *sval;
@@ -82,7 +81,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 86 "swag.tab.h"
+#line 85 "swag.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

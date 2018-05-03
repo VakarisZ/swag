@@ -4,6 +4,9 @@
 #include <ctype.h>
 #include <iostream>
 #include <vector>
+#include <map>
+#include <string>
+#include "variable.h"
 using namespace std;
 
 extern "C" int yylex();
@@ -11,9 +14,11 @@ extern "C" int yyparse();
 extern "C" FILE *yyin;
 extern int line_num; 
 int symbols[52];
+map<string, Variable> varMap;
 int symbolVal(char symbol);
 void updateSymbolVal(char symbol, int val);
 void yyerror(const char *s);
+void addVariable(string name, int val);
 %}
 
 %union {
@@ -41,9 +46,9 @@ void yyerror(const char *s);
 %token T_PRINT
 
 %token <ival> T_INT
-%token <id> T_ID
+%token <sval> T_ID
 %type <ival> plain_statement exp term 
-%type <id> assignment
+%type <sval> assignment
 
 // define the "terminal symbol" token types I'm going to use (in CAPS
 // by convention), and associate each with a field of the union:
@@ -66,7 +71,7 @@ plain_statement :   assignment T_ENDL {;}
                     | T_PRINT exp T_ENDL			{cout << $2 <<endl;}
                     ;
 
-assignment : type T_ID T_ASSIGN exp  { updateSymbolVal($2,$4); }
+assignment : type T_ID T_ASSIGN exp  { addVariable($2,$4); }
 
 exp    	: term                  {$$ = $1;}
        	| exp T_PLUS term          {$$ = $1 + $3;}
@@ -74,7 +79,7 @@ exp    	: term                  {$$ = $1;}
        	;
 
 term   	: T_INT                {$$ = $1;}
-		| T_ID			{$$ = symbolVal($1);} 
+		| T_ID			{ $$ = varMap[$1].intVal; }
         ;        
         
 type    :   TT_INT
@@ -130,3 +135,12 @@ void yyerror(const char *s) {
 	// might as well halt now:
 	exit(-1);
 }
+
+/* Code written by Vakaris */
+
+
+void addVariable(string name, int val){
+    Variable var(name, val);
+    varMap.insert(pair<string, Variable>(name, var));
+}
+

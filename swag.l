@@ -10,7 +10,7 @@ using namespace std;
 %%
 
  /* hard typed tokens */
-[0-9]+            { yylval.ival = atoi(yytext); return T_INT; }
+[\-]?[0-9]+            { yylval.ival = atoi(yytext); return T_INT; }
 [a-zA-Z]			   {yylval.id = yytext[0]; return T_ID;}
 \"[a-zA-Z0-9]+\"      {
 	yylval.sval = strdup(yytext);

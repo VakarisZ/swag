@@ -3,3 +3,4 @@ calc.l
 calc.tab.c
 calc.tab.h
 lex.yy.c
+run.bat

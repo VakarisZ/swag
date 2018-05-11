@@ -41,6 +41,8 @@ lookup(char* sym)
     if(!sp->name) {		/* new entry */
       sp->name = strdup(sym);
       sp->value = 0;
+      sp->val_type = 0;
+      sp->strval = NULL;
       sp->func = NULL;
       sp->syms = NULL;
       return sp;
@@ -228,7 +230,7 @@ static double calluser(struct ufncall *);
 double
 eval(struct ast *a)
 {
-  double v;
+  struct evaluation e;
 
   if(!a) {
     yyerror("internal error, null eval");
@@ -237,12 +239,18 @@ eval(struct ast *a)
 
   switch(a->nodetype) {
       
-  case 'G': v = 69; printf("stringiukas :%s\n",((struct strval *)a)->str_value); break;
+  case 'G': e->type=2; 
+            e->vv=0; 
+            e->sv=((struct strval *)a)->str_value; break;
     /* constant */
-  case 'K': v = ((struct numval *)a)->number; break;
+  case 'K': e->type=1; 
+            e->vv=((struct numval *)a)->number; break;
 
     /* name reference */
-  case 'N': v = ((struct symref *)a)->s->value; break;
+  case 'N': e->type = ((struct symref *)a)->s->val_type;
+            e->vv = ((struct symref *)a)->s->value;
+            e->sv = ((struct symref *)a)->s->strval;
+            break;
 
     /* assignment */
   case '=': v = ((struct symasgn *)a)->s->value =

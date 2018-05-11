@@ -12,6 +12,10 @@
 struct symbol {		/* a variable name */
   char *name;
   double value;
+  
+  char *strval;
+  int val_type;  // 1 is double; 2 is string
+  
   struct ast *func;	/* stmt for the function */
   struct symlist *syms; /* list of dummy args */
 };
@@ -90,6 +94,12 @@ struct strval {
     int nodetype;
     char *str_value;
 };
+
+struct evaluation {
+    int type; //1 is double, 2 is string
+    double vv;
+    char* sv;
+}
 
 struct symref {
   int nodetype;			/* type N */

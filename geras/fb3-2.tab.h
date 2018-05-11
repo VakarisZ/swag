@@ -40,17 +40,18 @@
       know about them.  */
    enum yytokentype {
      NUMBER = 258,
-     NAME = 259,
-     FUNC = 260,
-     EOL = 261,
-     IF = 262,
-     THEN = 263,
-     ELSE = 264,
-     WHILE = 265,
-     DO = 266,
-     LET = 267,
-     CMP = 268,
-     UMINUS = 269
+     STRING = 259,
+     NAME = 260,
+     FUNC = 261,
+     EOL = 262,
+     IF = 263,
+     THEN = 264,
+     ELSE = 265,
+     WHILE = 266,
+     DO = 267,
+     LET = 268,
+     CMP = 269,
+     UMINUS = 270
    };
 #endif
 
@@ -65,6 +66,7 @@ typedef union YYSTYPE
 
   struct ast *a;
   double d;
+  char *sval;
   struct symbol *s;		/* which symbol */
   struct symlist *sl;
   int fn;			/* which function */
@@ -72,7 +74,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 76 "fb3-2.tab.h"
+#line 78 "fb3-2.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

@@ -16,6 +16,7 @@ extern FILE *yyin;
 %union {
   struct ast *a;
   double d;
+  char *sval;
   struct symbol *s;		/* which symbol */
   struct symlist *sl;
   int fn;			/* which function */
@@ -23,6 +24,7 @@ extern FILE *yyin;
 
 /* declare tokens */
 %token <d> NUMBER
+%token <sval> STRING
 %token <s> NAME
 %token <fn> FUNC
 %token EOL
@@ -66,6 +68,7 @@ exp: exp CMP exp          { $$ = newcmp($2, $1, $3); }
    | '(' exp ')'          { $$ = $2; }
    | '-' exp %prec UMINUS { $$ = newast('M', $2, NULL); }
    | NUMBER               { $$ = newnum($1); }
+   | STRING               { $$ = newstr($1); }
    | FUNC '(' explist ')' { $$ = newfunc($1, $3); }
    | NAME                 { $$ = newref($1); }
    | NAME '=' exp         { $$ = newasgn($1, $3); }
@@ -108,6 +111,5 @@ int main(int argc, char **argv) {
 	do {
 		yyparse();
 	} while (!feof(yyin));
-	printf("weeed\n");
 	
 }

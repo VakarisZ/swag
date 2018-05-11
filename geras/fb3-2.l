@@ -10,6 +10,8 @@
 %{
 # include "fb3-2.h"
 # include "fb3-2.tab.h"
+# include <stdlib.h>
+# include <string.h>
 %}
 
 /* float exponent */
@@ -59,6 +61,7 @@ EXP	([Ee][-+]?[0-9]+)
  /* names */
 [a-zA-Z][a-zA-Z0-9]*  { yylval.s = lookup(yytext); return NAME; }
 
+\"[a-zA-Z0-9]+\" { printf("found a string: %s\n", yytext); yylval.sval = strdup(yytext); return STRING;}
 [0-9]+"."[0-9]*{EXP}? |
 "."?[0-9]+{EXP}? { yylval.d = atof(yytext); return NUMBER; }
 

@@ -53,8 +53,6 @@ lookup(char* sym)
 
 }
 
-
-
 struct ast *
 newast(int nodetype, struct ast *l, struct ast *r)
 {
@@ -81,6 +79,20 @@ newnum(double d)
   }
   a->nodetype = 'K';
   a->number = d;
+  return (struct ast *)a;
+}
+
+struct ast *
+newstr(char *s)
+{
+  struct strval *a = malloc(sizeof(struct strval));
+  
+  if(!a) {
+    yyerror("out of space");
+    exit(0);
+  }
+  a->nodetype = 'G';
+  a->str_value = s;
   return (struct ast *)a;
 }
 
@@ -224,6 +236,8 @@ eval(struct ast *a)
   }
 
   switch(a->nodetype) {
+      
+  case 'G': v = 69; printf("stringiukas :%s\n",((struct strval *)a)->str_value); break;
     /* constant */
   case 'K': v = ((struct numval *)a)->number; break;
 
@@ -402,7 +416,7 @@ treefree(struct ast *a)
     treefree(a->l);
 
     /* no subtree */
-  case 'K': case 'N':
+  case 'K': case 'N': case 'G':
     break;
 
   case '=':
@@ -457,6 +471,10 @@ dumpast(struct ast *a, int level)
   }
 
   switch(a->nodetype) {
+      
+    /* constant */
+  case 'G': printf("string %s\n", ((struct strval *)a)->str_value); break;
+  
     /* constant */
   case 'K': printf("number %4.4g\n", ((struct numval *)a)->number); break;
 

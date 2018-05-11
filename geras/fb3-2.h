@@ -43,6 +43,7 @@ void symlistfree(struct symlist *sl);
  *  S list of symbols
  *  F built in function call
  *  C user function call
+ *  G strinG
  */ 
 
 enum bifs {			/* built-in functions */
@@ -85,6 +86,11 @@ struct numval {
   double number;
 };
 
+struct strval {
+    int nodetype;
+    char *str_value;
+};
+
 struct symref {
   int nodetype;			/* type N */
   struct symbol *s;
@@ -104,6 +110,7 @@ struct ast *newcall(struct symbol *s, struct ast *l);
 struct ast *newref(struct symbol *s);
 struct ast *newasgn(struct symbol *s, struct ast *v);
 struct ast *newnum(double d);
+struct ast *newstr(char *s);
 struct ast *newflow(int nodetype, struct ast *cond, struct ast *tl, struct ast *tr);
 
 /* define a function */

@@ -99,7 +99,7 @@ struct evaluation {
     int type; //1 is double, 2 is string
     double vv;
     char* sv;
-}
+};
 
 struct symref {
   int nodetype;			/* type N */

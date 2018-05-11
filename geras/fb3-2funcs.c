@@ -231,6 +231,7 @@ double
 eval(struct ast *a)
 {
   struct evaluation e;
+  e->type = 1;
 
   if(!a) {
     yyerror("internal error, null eval");
@@ -255,75 +256,86 @@ eval(struct ast *a)
     /* assignment */
   case '=': v = ((struct symasgn *)a)->s->value =
       eval(((struct symasgn *)a)->v); break;
+  
+  case '=': 
+			e = eval(((struct symasgn *)a)->v);
+			((struct symasgn *)a)->s->val_type = e->type;
+			((struct symasgn *)a)->s->value = e->vv;
+			((struct symasgn *)a)->s->strval = e->sv;
+		break;	    
 
     /* expressions */
-  case '+': v = eval(a->l) + eval(a->r); break;
-  case '-': v = eval(a->l) - eval(a->r); break;
-  case '*': v = eval(a->l) * eval(a->r); break;
-  case '/': v = eval(a->l) / eval(a->r); break;
-  case '|': v = fabs(eval(a->l)); break;
-  case 'M': v = -eval(a->l); break;
+  case '+': e->vv = eval(a->l)->vv + eval(a->r)->vv; break;
+  case '-': e->vv = eval(a->l)->vv - eval(a->r)->vv; break;
+  case '*': e->vv = eval(a->l)->vv * eval(a->r)->vv; break;
+  case '/': e->vv = eval(a->l)->vv / eval(a->r)->vv; break;
+  case '|': e->vv = fabs(eval(a->l)->vv); break;
+  case 'M': e->vv = -eval(a->l)->vv; break;
 
     /* comparisons */
-  case '1': v = (eval(a->l) > eval(a->r))? 1 : 0; break;
-  case '2': v = (eval(a->l) < eval(a->r))? 1 : 0; break;
-  case '3': v = (eval(a->l) != eval(a->r))? 1 : 0; break;
-  case '4': v = (eval(a->l) == eval(a->r))? 1 : 0; break;
-  case '5': v = (eval(a->l) >= eval(a->r))? 1 : 0; break;
-  case '6': v = (eval(a->l) <= eval(a->r))? 1 : 0; break;
+  case '1': e->vv = (eval(a->l)->vv > eval(a->r))->vv? 1 : 0; break;
+  case '2': e->vv = (eval(a->l)->vv < eval(a->r))->vv? 1 : 0; break;
+  case '3': e->vv = (eval(a->l)->vv != eval(a->r))->vv? 1 : 0; break;
+  case '4': e->vv = (eval(a->l)->vv == eval(a->r))->vv? 1 : 0; break;
+  case '5': e->vv = (eval(a->l)->vv >= eval(a->r))->vv? 1 : 0; break;
+  case '6': e->vv = (eval(a->l)->vv <= eval(a->r))->vv? 1 : 0; break;
 
   /* control flow */
   /* null if/else/do expressions allowed in the grammar, so check for them */
   case 'I': 
-    if( eval( ((struct flow *)a)->cond) != 0) {
+    if( eval( ((struct flow *)a)->cond)->vv != 0) {
       if( ((struct flow *)a)->tl) {
-	v = eval( ((struct flow *)a)->tl);
+	e->vv = eval( ((struct flow *)a)->tl)->vv;
       } else
-	v = 0.0;		/* a default value */
+	e->vv = 0.0;		/* a default value */
     } else {
       if( ((struct flow *)a)->el) {
-        v = eval(((struct flow *)a)->el);
+        e->vv = eval(((struct flow *)a)->el)->vv;
       } else
-	v = 0.0;		/* a default value */
+	e->vv = 0.0;		/* a default value */
     }
     break;
 
   case 'W':
-    v = 0.0;		/* a default value */
+    e->vv = 0.0;		/* a default value */
     
     if( ((struct flow *)a)->tl) {
-      while( eval(((struct flow *)a)->cond) != 0)
-	v = eval(((struct flow *)a)->tl);
+      while( eval(((struct flow *)a)->cond)->vv != 0)
+	e->vv = eval(((struct flow *)a)->tl)->vv;
     }
     break;			/* last value is value */
 	              
-  case 'L': eval(a->l); v = eval(a->r); break;
+  case 'L': eval(a->l)->vv; e->vv = eval(a->r)->vv; break;
 
-  case 'F': v = callbuiltin((struct fncall *)a); break;
+  case 'F': e->vv = callbuiltin((struct fncall *)a); break;
 
-  case 'C': v = calluser((struct ufncall *)a); break;
+  case 'C': e->vv = calluser((struct ufncall *)a); break;
 
   default: printf("internal error: bad node %c\n", a->nodetype);
   }
-  return v;
+  return e;
 }
 
 static double
 callbuiltin(struct fncall *f)
 {
   enum bifs functype = f->functype;
-  double v = eval(f->l);
+  struct evaluation e;
+  e = eval(f->l);
 
  switch(functype) {
  case B_sqrt:
-   return sqrt(v);
+   return sqrt(e->vv);
  case B_exp:
-   return exp(v);
+   return exp(e->vv);
  case B_log:
-   return log(v);
+   return log(e->vv);
  case B_print:
-   printf("= %4.4g\n", v);
-   return v;
+	if (e->type == 1)
+		printf("= %4.4g\n", e->vv);
+	else 
+		printf("= %s\n", e->sv);
+   return e->vv;
  default:
    yyerror("Unknown built-in function %d", functype);
    return 0.0;

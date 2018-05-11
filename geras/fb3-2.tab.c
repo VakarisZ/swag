@@ -448,7 +448,7 @@ static const yytype_uint8 yyrline[] =
 {
        0,    48,    48,    49,    50,    51,    54,    55,    62,    63,
       64,    65,    66,    67,    68,    69,    70,    71,    72,    73,
-      74,    75,    78,    79,    81,    82,    85,    86,    91,    95
+      74,    75,    78,    79,    81,    82,    85,    86,    92,    96
 };
 #endif
 
@@ -1553,7 +1553,8 @@ yyreduce:
 #line 86 "fb3-2.y"
     {
     if(debug) dumpast((yyvsp[(2) - (3)].a), 0);
-     printf("= %4.4g\n> ", eval((yyvsp[(2) - (3)].a)));
+     //printf("= %4.4g\n> ", eval($2));
+     eval((yyvsp[(2) - (3)].a));
      treefree((yyvsp[(2) - (3)].a));
     ;}
     break;
@@ -1561,7 +1562,7 @@ yyreduce:
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 91 "fb3-2.y"
+#line 92 "fb3-2.y"
     {
                        dodef((yyvsp[(3) - (9)].s), (yyvsp[(5) - (9)].sl), (yyvsp[(8) - (9)].a));
                        printf("Defined %s\n> ", (yyvsp[(3) - (9)].s)->name); ;}
@@ -1570,14 +1571,14 @@ yyreduce:
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 95 "fb3-2.y"
+#line 96 "fb3-2.y"
     { yyerrok; printf("> "); ;}
     break;
 
 
 
 /* Line 1455 of yacc.c  */
-#line 1581 "fb3-2.tab.c"
+#line 1582 "fb3-2.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -1789,7 +1790,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 97 "fb3-2.y"
+#line 98 "fb3-2.y"
 
 
 int main(int argc, char **argv) {

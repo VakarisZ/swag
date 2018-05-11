@@ -85,7 +85,8 @@ symlist: NAME       { $$ = newsymlist($1, NULL); }
 calclist: /* nothing */
   | calclist stmt EOL {
     if(debug) dumpast($2, 0);
-     printf("= %4.4g\n> ", eval($2));
+     //printf("= %4.4g\n> ", eval($2));
+     eval($2);
      treefree($2);
     }
   | calclist LET NAME '(' symlist ')' '=' list EOL {

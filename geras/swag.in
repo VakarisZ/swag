@@ -1,5 +1,3 @@
-a=5
-print(a)
 b="vakaris"
 print(b)
 ENDPROG

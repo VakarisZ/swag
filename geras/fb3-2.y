@@ -91,9 +91,9 @@ calclist: /* nothing */
     }
   | calclist LET NAME '(' symlist ')' '=' list EOL {
                        dodef($3, $5, $8);
-                       printf("Defined %s\n> ", $3->name); }
+                       printf("Defined %s\n ", $3->name); }
 
-  | calclist error EOL { yyerrok; printf("> "); }
+  | calclist error EOL { yyerrok; printf("error: "); }
  ;
 %%
 

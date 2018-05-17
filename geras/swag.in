@@ -1,3 +1,6 @@
 b="vakaris"
 print(b)
+let vardas(x) = if x == 1 then "Lukas"; else "Linas";;
+print(vardas(1))
+print(vardas(2))
 ENDPROG

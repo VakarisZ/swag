@@ -840,7 +840,7 @@ YY_RULE_SETUP
 case 30:
 YY_RULE_SETUP
 #line 64 "fb3-2.l"
-{ printf("found a string: %s\n", yytext); yylval.sval = strdup(yytext); return STRING;}
+{ yylval.sval = strdup(yytext); return STRING;}
 	YY_BREAK
 case 31:
 #line 66 "fb3-2.l"

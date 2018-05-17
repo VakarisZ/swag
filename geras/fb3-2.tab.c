@@ -1572,7 +1572,7 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 96 "fb3-2.y"
-    { yyerrok; printf("> "); ;}
+    { yyerrok; printf(" "); ;}
     break;
 
 

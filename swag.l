@@ -1,52 +1,80 @@
-%option noyywrap
+/* Companion source code for "flex & bison", published by O'Reilly
+ * Media, ISBN 978-0-596-15597-1
+ * Copyright (c) 2009, Taughannock Networks. All rights reserved.
+ * See the README file for license conditions and contact info.
+ * $Header: /home/johnl/flnb/code/RCS/swag.l,v 2.1 2009/11/08 02:53:18 johnl Exp $
+ */
+/* recognize tokens for the calculator */
+
+%option noyywrap nodefault yylineno
 %{
-#include <stdio.h>
-#include <iostream>
-#define YY_DECL extern "C" int yylex()
-int line_num = 1;
-using namespace std;
-#include "swag.tab.h"  // to get the token types that we return
+# include "swag.h"
+# include "swag.tab.h"
+# include <stdlib.h>
+# include <string.h>
 %}
+
+/* float exponent */
+EXP	([Ee][-+]?[0-9]+)
+
 %%
+ /* single character ops */
+"[" |
+"+" |
+"-" |
+"*" |
+"/" |
+"=" |
+"|" |
+"," |
+";" |
+"(" |
+")"     { return yytext[0]; }
 
- /* hard typed tokens */
-[\-]?[0-9]+            { yylval.ival = atoi(yytext); return T_INT; }
-[a-zA-Z]			   {yylval.id = yytext[0]; return T_ID;}
-\"[a-zA-Z0-9]*\"      {
-	yylval.sval = strdup(yytext);
-	return T_STRING;
-}
+ /* comparison ops */
+">"     { yylval.fn = 1; return CMP; }
+"<"     { yylval.fn = 2; return CMP; }
+"<>"    { yylval.fn = 3; return CMP; }
+"=="    { yylval.fn = 4; return CMP; }
+">="    { yylval.fn = 5; return CMP; }
+"<="    { yylval.fn = 6; return CMP; }
 
- /* type tokens */
-"int"                   { return TT_INT; }
-"str"                   { return TT_STR; }
+ /* keywords */
 
- /* method tokens */
-"print"				    { return T_PRINT; }
+"if"    { return IF; }
+"then"  { return THEN; }
+"else"  { return ELSE; }
+"while" { return WHILE; }
+"do"    { return DO; }
+"func"   { return LET;}
 
- /* operation and comparison tokens */
-"="                     { return T_ASSIGN; }
-"=="                    { return T_CEQ; }
-"!="                    { return T_CNE; }
-"<"                     { return T_CLT; }
-"<="                    { return T_CLE; }
-">"                     { return T_CGT; }
-">="                    { return T_CGE; }
-"+"                     { return T_PLUS ;}
-"-"                     { return T_MINUS ;}
-"*"                     { return T_MUL ;}
-"/"                     { return T_DIV; }
+ /* types */
+"int" { return TYPEINT; }
+"str" { return TYPESTR; }
 
- /* control tokens */
-"("                     { return T_LPAREN ;}
-")"                     { return T_RPAREN ;}
-"{"                     { return T_LBRACE ;}
-"}"                     { return T_RBRACE ;} 
-"end"            { return T_END; }
-\n { ++line_num; return T_ENDL; }
 
- /* debug tokens */
-[ \t]           ;
-.                       printf("Unknown token!n"); yyterminate();
+ /* built in functions */
+"sqrt"  { yylval.fn = B_sqrt; return FUNC; }
+"exp"   { yylval.fn = B_exp; return FUNC; }
+"log"   { yylval.fn = B_log; return FUNC; }
+"print" { yylval.fn = B_print; return FUNC; }
 
+ /* debug hack */
+"debug"[0-9]+ { debug = atoi(&yytext[5]); printf("debug set to %d\n", debug); }
+
+"ENDPROG"  yyterminate();
+
+ /* names */
+[a-zA-Z][a-zA-Z0-9]*  { yylval.s = lookup(yytext); return NAME; }
+
+\"[a-zA-Z0-9]+\" { yylval.sval = strdup(yytext); return STRING;}
+[0-9]+"."[0-9]*{EXP}? |
+"."?[0-9]+{EXP}? { yylval.d = atof(yytext); return NUMBER; }
+
+"//".*  
+[ \t]   /* ignore white space */ 
+\\\n    printf("c> "); /* ignore line continuation */
+"\n"    { return EOL; }
+
+.	{ yyerror("Mystery character %c\n", *yytext); }
 %%

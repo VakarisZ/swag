@@ -2,7 +2,7 @@
  * Media, ISBN 978-0-596-15597-1
  * Copyright (c) 2009, Taughannock Networks. All rights reserved.
  * See the README file for license conditions and contact info.
- * $Header: /home/johnl/flnb/code/RCS/fb3-2.h,v 2.1 2009/11/08 02:53:18 johnl Exp $
+ * $Header: /home/johnl/flnb/code/RCS/swag.h,v 2.1 2009/11/08 02:53:18 johnl Exp $
  */
 /*
  * Declarations for a calculator fb3-1
@@ -124,7 +124,7 @@ struct ast *newstr(char *s);
 struct ast *newflow(int nodetype, struct ast *cond, struct ast *tl, struct ast *tr);
 
 /* define a function */
-void dodef(struct symbol *name, struct symlist *syms, struct ast *stmts);
+void dodef(struct symbol *name, struct symlist *syms, struct ast *stmts, int type);
 
 /* evaluate an AST */
 struct evaluation eval(struct ast *);

@@ -1,100 +1,114 @@
-%{
-#include <stdio.h>    
-#include <stdlib.h>
-#include <ctype.h>
-#include <iostream>
-#include <vector>
-#include <map>
-#include <string>
-#include "variable.h"
-using namespace std;
+/* Companion source code for "flex & bison", published by O'Reilly
+ * Media, ISBN 978-0-596-15597-1
+ * Copyright (c) 2009, Taughannock Networks. All rights reserved.
+ * See the README file for license conditions and contact info.
+ * $Header: /home/johnl/flnb/code/RCS/swag.y,v 2.1 2009/11/08 02:53:18 johnl Exp $
+ */
+/* calculator with AST */
 
-extern "C" int yylex();
-extern "C" int yyparse();
-extern "C" FILE *yyin;
-extern int line_num; 
-int symbols[52];
-std::map<char*, Variable> varMap;
-int symbolVal(char symbol);
-void updateSymbolVal(char symbol, int val);
-void yyerror(const char *s);
-void addVariable(char* name, int val);
+%{
+#  include <stdio.h>
+#  include <stdlib.h>
+#  include "swag.h"
+extern FILE *yyin;
 %}
 
 %union {
-	int ival;
-	char *sval;
-    char id;
+  struct ast *a;
+  double d;
+  char *sval;
+  struct symbol *s;		/* which symbol */
+  struct symlist *sl;
+  int fn;			/* which function */
 }
 
-//Variable types
-%token TT_INT TT_STR
+/* declare tokens */
+%token <d> NUMBER
+%token <sval> STRING
+%token TYPEINT TYPESTR
+%token <s> NAME
+%token <fn> FUNC
+%token EOL
 
-//Compares
-%token T_CEQ T_CNE T_CLT T_CLE T_CGT T_CGE
+%token IF THEN ELSE WHILE DO LET
 
-//Control
-%token T_LPAREN T_RPAREN T_LBRACE T_RBRACE
 
-//Math and assing
-%left T_PLUS T_MINUS T_MUL T_DIV T_ASSIGN
+%nonassoc <fn> CMP
+%right '='
+%left '+' '-'
+%left '*' '/'
+%nonassoc '|' UMINUS
 
-//Termination
-%token T_END T_ENDL
+%type <a> exp stmt list explist
+%type <sl> symlist
 
-//Methods
-%token T_PRINT
-
-%token <ival> T_INT
-%token <sval> T_ID
-%type <ival> plain_statement exp term 
-%type <sval> assignment
-
-// define the "terminal symbol" token types I'm going to use (in CAPS
-// by convention), and associate each with a field of the union:
-%token sval T_STRING
-
-%start program
+%start calclist
 
 %%
-// BNF gramatika:
 
-program: block_statements ;
+stmt: IF exp THEN list           { $$ = newflow('I', $2, $4, NULL); }
+   | IF exp THEN list ELSE list  { $$ = newflow('I', $2, $4, $6); }
+   | WHILE exp DO list          { $$ = newflow('W', $2, $4, NULL); }
+   | exp
+;
 
-block_statements : block_statement | block_statements block_statement;
+list: /* nothing */ { $$ = NULL; }
+   | stmt ';' list { if ($3 == NULL)
+	                $$ = $1;
+                      else
+			$$ = newast('L', $1, $3);
+                    }
+    
+   ;
 
-block_statement : 	statement 
-					| T_END {cout << "bye." <<endl;}
-					;
+exp: exp CMP exp          { $$ = newcmp($2, $1, $3); }
+   | exp '+' exp          { $$ = newast('+', $1,$3); }
+   | exp '-' exp          { $$ = newast('-', $1,$3);}
+   | exp '*' exp          { $$ = newast('*', $1,$3); }
+   | exp '/' exp          { $$ = newast('/', $1,$3); }
+   | '|' exp              { $$ = newast('|', $2, NULL); }
+   | '(' exp ')'          { $$ = $2; }
+   | '-' exp %prec UMINUS { $$ = newast('M', $2, NULL); }
+   | NUMBER               { $$ = newnum($1); }
+   | STRING               { $$ = newstr($1); }
+   | FUNC '(' explist ')' { $$ = newfunc($1, $3); }
+   | NAME                 { $$ = newref($1); }
+   | NAME '=' exp         { $$ = newasgn($1, $3); }
+   | NAME '(' explist ')' { $$ = newcall($1, $3); }
+;
 
-statement : plain_statement;
+explist: exp
+ | exp ',' explist  { $$ = newast('L', $1, $3); }
+;
+symlist: NAME       { $$ = newsymlist($1, NULL); }
+ | NAME ',' symlist { $$ = newsymlist($1, $3); }
+;
 
-plain_statement :   assignment T_ENDL {;}
-                    | T_PRINT exp T_ENDL			{cout << $2 <<endl;}
-                    ;
-
-assignment : type T_ID T_ASSIGN exp  { addVariable($2,$4); }
-
-exp    	: term                  {$$ = $1;}
-       	| exp T_PLUS term          {$$ = $1 + $3;}
-       	| exp T_MINUS term          {$$ = $1 - $3;}
-       	;
-
-term   	: T_INT                {$$ = $1;}
-		| T_ID			{ $$ = varMap[$1].intVal; }
-        ;        
-        
-type    :   TT_INT
-        |   TT_STR
-        ;
+calclist: /* nothing */
+  | calclist stmt EOL {
+    if(debug) dumpast($2, 0);
+     //printf("= %4.4g\n> ", eval($2));
+     eval($2);
+     treefree($2);
+    }
+  | calclist LET TYPEINT NAME '(' symlist ')' '=' list EOL {
+                       dodef($4, $6, $9, 1);
+                       //printf("Defined %s\n ", $4->name); 
+                       }
+  | calclist LET TYPESTR NAME '(' symlist ')' '=' list EOL {
+                       dodef($4, $6, $9, 2);
+                       //printf("Defined %s\n ", $4->name); 
+                       }
+  | calclist error EOL { yyerrok; printf("error: "); }
+ ;
 %%
 
-int main(int, char**) {
+int main(int argc, char **argv) {
 	// open a file handle to a particular file:
 	FILE *myfile = fopen("swag.in", "r");
 	// make sure it is valid:
 	if (!myfile) {
-		cout << "I can't open swag.in!" << endl;
+		printf("I can't open swag.in!" );
 		return -1;
 	}
 	// set flex to read from it instead of defaulting to STDIN:
@@ -106,44 +120,3 @@ int main(int, char**) {
 	} while (!feof(yyin));
 	
 }
-
-int computeSymbolIndex(char token)
-{
-	int idx = -1;
-	if(islower(token)) {
-		idx = token - 'a' + 26;
-	} else if(isupper(token)) {
-		idx = token - 'A';
-	}
-	return idx;
-} 
-
-/* returns the value of a given symbol */
-int symbolVal(char symbol)
-{
-	int bucket = computeSymbolIndex(symbol);
-	return symbols[bucket];
-}
-
-/* updates the value of a given symbol */
-void updateSymbolVal(char symbol, int val)
-{
-	int bucket = computeSymbolIndex(symbol);
-	symbols[bucket] = val;
-}
-
-void yyerror(const char *s) {
-	cout << "EEK, parse error on line " << line_num << "! Message: " << s << endl;
-	// might as well halt now:
-	exit(-1);
-}
-
-/* Code written by Vakaris */
-
-//weeeeeeeeeeeeeeeeed
-
-void addVariable(char* name, int val){
-    Variable var(name, val);
-    varMap.insert(pair<char*, Variable>(name, var));
-}
-

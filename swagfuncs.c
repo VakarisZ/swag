@@ -2,17 +2,17 @@
  * Media, ISBN 978-0-596-15597-1
  * Copyright (c) 2009, Taughannock Networks. All rights reserved.
  * See the README file for license conditions and contact info.
- * $Header: /home/johnl/flnb/code/RCS/fb3-2funcs.c,v 2.1 2009/11/08 02:53:18 johnl Exp $
+ * $Header: /home/johnl/flnb/code/RCS/swagfuncs.c,v 2.1 2009/11/08 02:53:18 johnl Exp $
  */
 /*
- * helper functions for fb3-2
+ * helper functions for swag
  */
 #  include <stdio.h>
 #  include <stdlib.h>
 #  include <stdarg.h>
 #  include <string.h>
 #  include <math.h>
-#  include "fb3-2.h"
+#  include "swag.h"
 
 
 
@@ -140,6 +140,7 @@ newcall(struct symbol *s, struct ast *l)
   a->nodetype = 'C';
   a->l = l;
   a->s = s;
+  
   return (struct ast *)a;
 }
 
@@ -216,16 +217,17 @@ symlistfree(struct symlist *sl)
 
 /* define a function */
 void
-dodef(struct symbol *name, struct symlist *syms, struct ast *func)
+dodef(struct symbol *name, struct symlist *syms, struct ast *func, int type)
 {
   if(name->syms) symlistfree(name->syms);
   if(name->func) treefree(name->func);
   name->syms = syms;
   name->func = func;
+  name->val_type = type;
 }
 
 static double callbuiltin(struct fncall *);
-static double calluser(struct ufncall *);
+static struct evaluation calluser(struct ufncall *);
 
 struct evaluation
 eval(struct ast *a)
@@ -239,9 +241,8 @@ eval(struct ast *a)
   }
 
   switch(a->nodetype) {
-      
+      /* string */
   case 'G': e.type=2; 
-            //e.vv=0; 
             e.sv=((struct strval *)a)->str_value; break;
     /* constant */
   case 'K': e.type=1; 
@@ -282,12 +283,12 @@ eval(struct ast *a)
   case 'I': 
     if( eval( ((struct flow *)a)->cond).vv != 0) {
       if( ((struct flow *)a)->tl) {
-	e.vv = eval( ((struct flow *)a)->tl).vv;
+            e = eval( ((struct flow *)a)->tl);
       } else
 	e.vv = 0.0;		/* a default value */
     } else {
       if( ((struct flow *)a)->el) {
-        e.vv = eval(((struct flow *)a)->el).vv;
+        e = eval(((struct flow *)a)->el);
       } else
 	e.vv = 0.0;		/* a default value */
     }
@@ -306,8 +307,16 @@ eval(struct ast *a)
 
   case 'F': e.vv = callbuiltin((struct fncall *)a); break;
 
-  case 'C': e.vv = calluser((struct ufncall *)a); break;
-
+  case 'C': 
+    if(((struct ufncall *)a)->s->val_type == 1){
+        e.type = 1;
+        e.vv = calluser((struct ufncall *)a).vv;
+        break;
+    } else if(((struct ufncall *)a)->s->val_type == 2) {
+        e.type = 2;
+        e.sv = calluser((struct ufncall *)a).sv;
+        break;
+    }
   default: printf("internal error: bad node %c\n", a->nodetype);
   }
   return e;
@@ -339,20 +348,21 @@ callbuiltin(struct fncall *f)
  }
 }
 
-static double
+static struct evaluation
 calluser(struct ufncall *f)
 {
   struct symbol *fn = f->s;	/* function name */
   struct symlist *sl;		/* dummy arguments */
   struct ast *args = f->l;	/* actual arguments */
-  double *oldval, *newval;	/* saved arg values */
-  double v;
+  struct evaluation *oldval, *newval;	/* saved arg values */
+  struct evaluation v;
   int nargs;
   int i;
 
   if(!fn->func) {
     yyerror("call to undefined function", fn->name);
-    return 0;
+    v.vv = 0;
+    return v; //buvo 0
   }
 
   /* count the arguments */
@@ -361,10 +371,11 @@ calluser(struct ufncall *f)
     nargs++;
 
   /* prepare to save them */
-  oldval = (double *)malloc(nargs * sizeof(double));
-  newval = (double *)malloc(nargs * sizeof(double));
+  oldval = (struct evaluation *)malloc(nargs * sizeof(struct evaluation));
+  newval = (struct evaluation *)malloc(nargs * sizeof(struct evaluation));
   if(!oldval || !newval) {
-    yyerror("Out of space in %s", fn->name); return 0.0;
+    yyerror("Out of space in %s", fn->name); 
+    v.vv=0; return v; //0.0 buvo
   }
   
   /* evaluate the arguments */
@@ -372,14 +383,15 @@ calluser(struct ufncall *f)
     if(!args) {
       yyerror("too few args in call to %s", fn->name);
       free(oldval); free(newval);
-      return 0;
+      v.vv = 0;
+      return v;
     }
 
     if(args->nodetype == 'L') {	/* if this is a list node */
-      newval[i] = eval(args->l).vv;
+      newval[i] = eval(args->l);
       args = args->r;
     } else {			/* if it's the end of the list */
-      newval[i] = eval(args).vv;
+      newval[i] = eval(args);
       args = NULL;
     }
   }
@@ -389,25 +401,27 @@ calluser(struct ufncall *f)
   for(i = 0; i < nargs; i++) {
     struct symbol *s = sl->sym;
 
-    oldval[i] = s->value;
-    s->value = newval[i];
+    oldval[i].vv = s->value;
+    oldval[i].sv = s->strval;
+    s->value = newval[i].vv;
+    s->strval = newval[i].sv;
     sl = sl->next;
   }
 
   free(newval);
 
   /* evaluate the function */
-  v = eval(fn->func).vv;
+  v = eval(fn->func);
 
   /* put the dummies back */
   sl = fn->syms;
   for(i = 0; i < nargs; i++) {
     struct symbol *s = sl->sym;
 
-    s->value = oldval[i];
+    s->value = oldval[i].vv;
+    s->strval = oldval[i].sv;
     sl = sl->next;
   }
-
   free(oldval);
   return v;
 }

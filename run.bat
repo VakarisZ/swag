@@ -1,3 +1,3 @@
-flex swag.l
 bison -d swag.y
-g++ swag.tab.c lex.yy.c -L"E:\GnuWin32\lib" -o result.exe
+flex -oswag.lex.c swag.l
+gcc -o $@ swag.tab.c swag.lex.c swagfuncs.c

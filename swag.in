@@ -1,5 +1,10 @@
-int a = 5 - 2
-print a
-int b = a+2
-print b
-end
+func int sss(xx)=5*xx;
+print(sss(5))
+b="vakaris"
+print(b)
+func str vardas(x)=if x == 1 then "Lukas"; else "Linas";;
+z=vardas(1)
+print(vardas(2))
+k=0
+while k<5 do k=k+1; print(k);
+ENDPROG

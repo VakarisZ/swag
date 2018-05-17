@@ -39,30 +39,21 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     TT_INT = 258,
-     TT_STR = 259,
-     T_CEQ = 260,
-     T_CNE = 261,
-     T_CLT = 262,
-     T_CLE = 263,
-     T_CGT = 264,
-     T_CGE = 265,
-     T_LPAREN = 266,
-     T_RPAREN = 267,
-     T_LBRACE = 268,
-     T_RBRACE = 269,
-     T_ASSIGN = 270,
-     T_DIV = 271,
-     T_MUL = 272,
-     T_MINUS = 273,
-     T_PLUS = 274,
-     T_END = 275,
-     T_ENDL = 276,
-     T_PRINT = 277,
-     T_INT = 278,
-     T_ID = 279,
-     sval = 280,
-     T_STRING = 281
+     NUMBER = 258,
+     STRING = 259,
+     TYPEINT = 260,
+     TYPESTR = 261,
+     NAME = 262,
+     FUNC = 263,
+     EOL = 264,
+     IF = 265,
+     THEN = 266,
+     ELSE = 267,
+     WHILE = 268,
+     DO = 269,
+     LET = 270,
+     CMP = 271,
+     UMINUS = 272
    };
 #endif
 
@@ -73,16 +64,19 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 24 "swag.y"
+#line 16 "swag.y"
 
-	int ival;
-	char *sval;
-    char id;
+  struct ast *a;
+  double d;
+  char *sval;
+  struct symbol *s;		/* which symbol */
+  struct symlist *sl;
+  int fn;			/* which function */
 
 
 
 /* Line 1676 of yacc.c  */
-#line 86 "swag.tab.h"
+#line 80 "swag.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
